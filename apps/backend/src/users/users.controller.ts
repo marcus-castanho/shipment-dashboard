@@ -52,6 +52,12 @@ export class UsersController {
 
     if (!user) throw new NotFoundException();
 
+    if ('error' in user) {
+      if (user.error.code === PRISMA_ERROR.P2002.code)
+        throw new ConflictException();
+      throw new InternalServerErrorException();
+    }
+
     return user;
   }
 
