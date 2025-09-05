@@ -10,6 +10,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   }
 
   catchError(error) {
+    console.log(error);
     return {
       error: { code: (error?.code as string) || PRISMA_ERROR.DEFAULT.code },
     };
