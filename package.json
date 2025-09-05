@@ -5,7 +5,9 @@
   "workspaces": [
     "apps/*"
   ],
-  "scripts": {},
+  "scripts": {
+    "dev:backend": "npm --workspace apps/backend run start:dev"
+  },
   "keywords": [],
   "author": "Marcu Castanho",
   "license": "MIT",
