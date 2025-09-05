@@ -1,0 +1,13 @@
+{
+  "name": "shipment-dashboard",
+  "version": "1.0.0",
+  "main": "index.js",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {},
+  "keywords": [],
+  "author": "Marcu Castanho",
+  "license": "MIT",
+  "description": "Shipment Dashboard Assessment"
+}
