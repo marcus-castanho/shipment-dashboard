@@ -9,13 +9,16 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { ShipmentsService } from './shipments.service';
 import { CreateShipmentDto } from './dto/create-shipment.dto';
 import { PRISMA_ERROR } from 'src/prisma/consts';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
 import { ShipmentsGateway } from './shipments.gateway';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('shipments')
 export class ShipmentsController {
   constructor(
