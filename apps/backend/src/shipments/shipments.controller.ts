@@ -10,6 +10,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -52,8 +53,12 @@ export class ShipmentsController {
   }
 
   @Get()
-  findAll(@Req() req: CustomRequest) {
-    return this.shipmentsService.findAll({ userId: req.userId });
+  findAll(
+    @Req() req: CustomRequest,
+    @Query('code') code?: string,
+    @Query('status') status?: number,
+  ) {
+    return this.shipmentsService.findAll({ userId: req.userId, code, status });
   }
 
   @Get(':id')
