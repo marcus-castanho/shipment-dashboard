@@ -3,12 +3,14 @@ import {
   ConflictException,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   InternalServerErrorException,
   NotFoundException,
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ShipmentsService } from './shipments.service';
@@ -17,6 +19,7 @@ import { PRISMA_ERROR } from 'src/prisma/consts';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
 import { ShipmentsGateway } from './shipments.gateway';
 import { AuthGuard } from 'src/auth/auth.guard';
+import type { CustomRequest } from 'src/auth/types';
 
 @UseGuards(AuthGuard)
 @Controller('shipments')
@@ -27,7 +30,13 @@ export class ShipmentsController {
   ) {}
 
   @Post()
-  async create(@Body() createShipmentDto: CreateShipmentDto) {
+  async create(
+    @Req() req: CustomRequest,
+    @Body() createShipmentDto: CreateShipmentDto,
+  ) {
+    const { userId } = req;
+    if (userId !== createShipmentDto.userId) throw new ForbiddenException();
+
     const shipment = await this.shipmentsService.create(createShipmentDto);
 
     if ('error' in shipment) {
@@ -36,15 +45,15 @@ export class ShipmentsController {
       throw new InternalServerErrorException();
     }
 
-    const shipments = await this.shipmentsService.findAll();
+    const shipments = await this.shipmentsService.findAll({ userId });
     this.shipmentsGateway.notifyQueryChanges({ shipments });
 
     return shipment;
   }
 
   @Get()
-  findAll() {
-    return this.shipmentsService.findAll();
+  findAll(@Req() req: CustomRequest) {
+    return this.shipmentsService.findAll({ userId: req.userId });
   }
 
   @Get(':id')
@@ -58,20 +67,30 @@ export class ShipmentsController {
 
   @Patch(':id')
   async update(
+    @Req() req: CustomRequest,
     @Param('id') id: string,
     @Body() updateShipmentDto: UpdateShipmentDto,
   ) {
-    const shipment = await this.shipmentsService.update(+id, updateShipmentDto);
+    const { userId } = req;
+    const shipment = await this.shipmentsService.findOne(+id);
 
     if (!shipment) throw new NotFoundException();
+    if (userId !== shipment.userId) throw new ForbiddenException();
 
-    if ('error' in shipment) {
-      if (shipment.error.code === PRISMA_ERROR.P2002.code)
+    const updatedShipment = await this.shipmentsService.update(
+      +id,
+      updateShipmentDto,
+    );
+
+    if (!updatedShipment) throw new NotFoundException();
+
+    if ('error' in updatedShipment) {
+      if (updatedShipment.error.code === PRISMA_ERROR.P2002.code)
         throw new ConflictException();
       throw new InternalServerErrorException();
     }
 
-    const shipments = await this.shipmentsService.findAll();
+    const shipments = await this.shipmentsService.findAll({ userId });
     this.shipmentsGateway.notifyQueryChanges({ shipments });
     this.shipmentsGateway.notifyRecordChanges({ shipment });
 
@@ -79,11 +98,14 @@ export class ShipmentsController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    const shipment = await this.shipmentsService.remove(+id);
+  async remove(@Req() req: CustomRequest, @Param('id') id: string) {
+    const { userId } = req;
 
-    if (shipment === null) throw new NotFoundException();
+    const shipment = await this.shipmentsService.findOne(+id);
 
-    return;
+    if (!shipment) throw new NotFoundException();
+    if (userId !== shipment.userId) throw new ForbiddenException();
+
+    await this.shipmentsService.remove(+id);
   }
 }

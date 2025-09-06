@@ -21,8 +21,10 @@ export class ShipmentsService {
     return { ...createdShipment };
   }
 
-  async findAll() {
-    const shipments = await this.prismaService.shipment.findMany();
+  async findAll({ userId }: { userId: number }) {
+    const shipments = await this.prismaService.shipment.findMany({
+      where: { userId },
+    });
 
     return shipments;
   }
