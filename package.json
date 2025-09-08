@@ -6,7 +6,8 @@
     "apps/*"
   ],
   "scripts": {
-    "dev:backend": "npm --workspace apps/backend run start:dev"
+    "dev:backend": "npm --workspace apps/backend run start:dev",
+    "dev:frontend": "npm --workspace apps/frontend run dev"
   },
   "keywords": [],
   "author": "Marcu Castanho",
