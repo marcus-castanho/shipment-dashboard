@@ -3,7 +3,6 @@ import {
   ConflictException,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   InternalServerErrorException,
   NotFoundException,
@@ -19,7 +18,7 @@ import { CreateShipmentDto } from './dto/create-shipment.dto';
 import { PRISMA_ERROR } from 'src/prisma/consts';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
 import { ShipmentsGateway } from './shipments.gateway';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 import type { CustomRequest } from 'src/auth/types';
 
 @UseGuards(AuthGuard)
@@ -36,7 +35,6 @@ export class ShipmentsController {
     @Body() createShipmentDto: CreateShipmentDto,
   ) {
     const { userId } = req;
-    if (userId !== createShipmentDto.userId) throw new ForbiddenException();
 
     const shipment = await this.shipmentsService.create(createShipmentDto);
 
@@ -80,7 +78,6 @@ export class ShipmentsController {
     const shipment = await this.shipmentsService.findOne(+id);
 
     if (!shipment) throw new NotFoundException();
-    if (userId !== shipment.userId) throw new ForbiddenException();
 
     const updatedShipment = await this.shipmentsService.update(
       +id,
@@ -103,13 +100,10 @@ export class ShipmentsController {
   }
 
   @Delete(':id')
-  async remove(@Req() req: CustomRequest, @Param('id') id: string) {
-    const { userId } = req;
-
+  async remove(@Param('id') id: string) {
     const shipment = await this.shipmentsService.findOne(+id);
 
     if (!shipment) throw new NotFoundException();
-    if (userId !== shipment.userId) throw new ForbiddenException();
 
     await this.shipmentsService.remove(+id);
   }
