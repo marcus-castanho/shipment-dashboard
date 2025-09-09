@@ -9,9 +9,12 @@ export const EVENT = {
   SUBSCRIBE_TO_ID: "subscribe_to_id",
   FIND: "find",
   CONNECT: "connect",
+  DISCONNECT: "disconnect",
 };
 
 type SocketStore = {
+  connected: boolean;
+  setConnected: (value: boolean) => void;
   socket: Socket | null;
   setSocket: (socket: Socket) => void;
   lastUpdatedAt: Date;
@@ -23,6 +26,8 @@ export const useShipmentsWebsocket = () => {
   const useSocketStore = useMemo(
     () =>
       create<SocketStore>((set) => ({
+        connected: false,
+        setConnected: () => set(() => ({ connected: true })),
         socket: null,
         setSocket: (socket) => set(() => ({ socket })),
         lastUpdatedAt: new Date(),
@@ -32,6 +37,7 @@ export const useShipmentsWebsocket = () => {
   );
   const setSocket = useSocketStore((store) => store.setSocket);
   const setLastUpdatedAt = useSocketStore((store) => store.setLastUpdatedAt);
+  const setConnected = useSocketStore((store) => store.setConnected);
 
   useEffect(() => {
     const client = io(`${URL}/shipments`, {
@@ -41,14 +47,21 @@ export const useShipmentsWebsocket = () => {
 
     setSocket(client);
 
-    client.on(EVENT.CONNECT, () => console.log("Connected"));
+    client.on(EVENT.CONNECT, () => {
+      setConnected(true);
+      console.log("Connected");
+    });
     client.on(EVENT.QUERY, () => setLastUpdatedAt(new Date()));
     client.on(EVENT.FIND, () => setLastUpdatedAt(new Date()));
+    client.on(EVENT.DISCONNECT, () => {
+      setConnected(false);
+      console.log("Disconnected");
+    });
 
     return () => {
       client.close();
     };
-  }, [setLastUpdatedAt, setSocket, user.id, user.token]);
+  }, [setConnected, setLastUpdatedAt, setSocket, user.id, user.token]);
 
   return { useSocketStore };
 };
