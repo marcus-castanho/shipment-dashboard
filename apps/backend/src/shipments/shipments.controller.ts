@@ -34,8 +34,6 @@ export class ShipmentsController {
     @Req() req: CustomRequest,
     @Body() createShipmentDto: CreateShipmentDto,
   ) {
-    const { userId } = req;
-
     const shipment = await this.shipmentsService.create(createShipmentDto);
 
     if ('error' in shipment) {
@@ -43,9 +41,6 @@ export class ShipmentsController {
         throw new ConflictException();
       throw new InternalServerErrorException();
     }
-
-    const shipments = await this.shipmentsService.findAll({ userId });
-    this.shipmentsGateway.notifyQueryChanges({ shipments });
 
     return shipment;
   }
@@ -56,7 +51,11 @@ export class ShipmentsController {
     @Query('code') code?: string,
     @Query('status') status?: number,
   ) {
-    return this.shipmentsService.findAll({ userId: req.userId, code, status });
+    return this.shipmentsService.findAll({
+      userId: req.userId,
+      code,
+      status: status ? +status : undefined,
+    });
   }
 
   @Get(':id')
@@ -70,15 +69,9 @@ export class ShipmentsController {
 
   @Patch(':id')
   async update(
-    @Req() req: CustomRequest,
     @Param('id') id: string,
     @Body() updateShipmentDto: UpdateShipmentDto,
   ) {
-    const { userId } = req;
-    const shipment = await this.shipmentsService.findOne(+id);
-
-    if (!shipment) throw new NotFoundException();
-
     const updatedShipment = await this.shipmentsService.update(
       +id,
       updateShipmentDto,
@@ -92,19 +85,19 @@ export class ShipmentsController {
       throw new InternalServerErrorException();
     }
 
-    const shipments = await this.shipmentsService.findAll({ userId });
-    this.shipmentsGateway.notifyQueryChanges({ shipments });
-    this.shipmentsGateway.notifyRecordChanges({ shipment });
+    this.shipmentsGateway.notifyRecordChanges({ shipment: updatedShipment });
 
-    return shipment;
+    return updatedShipment;
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    const shipment = await this.shipmentsService.findOne(+id);
+    const removedShipment = await this.shipmentsService.remove(+id);
 
-    if (!shipment) throw new NotFoundException();
-
-    await this.shipmentsService.remove(+id);
+    if ('error' in removedShipment) {
+      if (removedShipment.error.code === PRISMA_ERROR.P2025.code)
+        throw new NotFoundException();
+      throw new InternalServerErrorException();
+    }
   }
 }

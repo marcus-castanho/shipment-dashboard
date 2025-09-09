@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateShipmentDto } from './dto/create-shipment.dto';
 import { UpdateShipmentDto } from './dto/update-shipment.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { v4 as uuid } from 'uuid';
+import { customAlphabet } from 'nanoid';
 
 @Injectable()
 export class ShipmentsService {
@@ -10,7 +10,7 @@ export class ShipmentsService {
 
   async create(createShipmentDto: CreateShipmentDto) {
     const catchError = (error) => this.prismaService.catchError(error);
-    const code = uuid();
+    const code = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 10)();
 
     const createdShipment = await this.prismaService.shipment
       .create({
@@ -31,7 +31,12 @@ export class ShipmentsService {
     status?: number;
   }) {
     const shipments = await this.prismaService.shipment.findMany({
-      where: { userId, code: { startsWith: code }, status },
+      where: {
+        userId,
+        code: { startsWith: code, mode: 'insensitive' },
+        status,
+      },
+      orderBy: { createdAt: 'desc' },
     });
 
     return shipments;
@@ -62,10 +67,12 @@ export class ShipmentsService {
   }
 
   async remove(id: number) {
-    const shipment = await this.findOne(id);
+    const catchError = (error) => this.prismaService.catchError(error);
 
-    if (!shipment) return null;
-
-    await this.prismaService.shipment.delete({ where: { id } });
+    return await this.prismaService.shipment
+      .delete({
+        where: { id },
+      })
+      .catch(catchError);
   }
 }
