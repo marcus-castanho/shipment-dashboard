@@ -40,6 +40,7 @@ export const useShipmentsWebsocket = () => {
 
     setSocket(client);
 
+    client.connect();
     client.on(EVENT.QUERY, () => setLastUpdatedAt(new Date()));
     client.on(EVENT.FIND, () => setLastUpdatedAt(new Date()));
 

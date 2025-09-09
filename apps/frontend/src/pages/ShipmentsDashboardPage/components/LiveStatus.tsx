@@ -4,7 +4,7 @@ import { useShipmentWSContext } from "../context/ShipmentWSContext";
 
 export const LiveStatus = () => {
   const { useSocketStore } = useShipmentWSContext();
-  const connected = useSocketStore((store) => store.socket?.connected);
+  const socket = useSocketStore((store) => store.socket);
   const lastUpdatedAt = useSocketStore((store) => store.lastUpdatedAt);
 
   return (
@@ -13,10 +13,10 @@ export const LiveStatus = () => {
         <div
           className={cn(
             "size-3 rounded-full",
-            connected ? "bg-green-600" : "bg-red-600"
+            socket?.connected ? "bg-green-600" : "bg-red-600"
           )}
         />
-        {connected ? "Live" : "Offline"} |
+        {socket?.connected ? "Live" : "Offline"} |
         <div>Last updated at: {format(lastUpdatedAt, "HH:mm:ss")}</div>
       </div>
     </div>
