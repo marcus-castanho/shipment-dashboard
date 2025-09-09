@@ -1,6 +1,8 @@
 import { type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+export type QueryKey = "get_shipments" | "patch_shipment";
+
 export type QueryProviderProps = {
   children?: ReactNode;
 };
