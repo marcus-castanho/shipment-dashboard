@@ -8,6 +8,7 @@ export const EVENT = {
   QUERY: "query",
   SUBSCRIBE_TO_ID: "subscribe_to_id",
   FIND: "find",
+  CONNECT: "connect",
 };
 
 type SocketStore = {
@@ -40,7 +41,7 @@ export const useShipmentsWebsocket = () => {
 
     setSocket(client);
 
-    client.connect();
+    client.on(EVENT.CONNECT, () => console.log("Connected"));
     client.on(EVENT.QUERY, () => setLastUpdatedAt(new Date()));
     client.on(EVENT.FIND, () => setLastUpdatedAt(new Date()));
 
