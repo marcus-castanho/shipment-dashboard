@@ -14,7 +14,7 @@ import { WsAuthGuard } from 'src/auth/guards/ws-auth.guard';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
-@WebSocketGateway({ namespace: 'shipments' })
+@WebSocketGateway({ namespace: 'shipments', cors: true })
 export class ShipmentsGateway implements OnGatewayInit<Server> {
   @WebSocketServer()
   socket: Server;
@@ -48,12 +48,12 @@ export class ShipmentsGateway implements OnGatewayInit<Server> {
   }
 
   @UseGuards(WsAuthGuard)
-  @SubscribeMessage(EVENT.SUBSCRIPE_TO_ID)
+  @SubscribeMessage(EVENT.SUBSCRIBE_TO_ID)
   async subscribeToId(
     @MessageBody() id: number,
     @ConnectedSocket() client: Socket,
   ) {
     await client.join(`${id}`);
-    this.socket.emit(EVENT.SUBSCRIPE_TO_ID, 'Connected');
+    this.socket.emit(EVENT.SUBSCRIBE_TO_ID, 'Connected');
   }
 }
