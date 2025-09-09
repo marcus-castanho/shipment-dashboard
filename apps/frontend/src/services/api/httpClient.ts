@@ -1,4 +1,4 @@
-export const URL = "http://localhost:3000";
+export const URL = import.meta.env.VITE_API_URL;
 
 type RequestArgs = {
   path: string;
