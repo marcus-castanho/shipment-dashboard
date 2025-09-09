@@ -9,11 +9,10 @@ type TextInputProps = {
 export const TextInput = ({
   containerClassname,
   inputClassname,
-  error,
   inputProps,
 }: TextInputProps) => {
   return (
-    <ComposedInput.Root className={containerClassname} error={error}>
+    <ComposedInput.Root className={containerClassname}>
       <ComposedInput.Text
         className={inputClassname}
         inputProps={{ ...inputProps }}
