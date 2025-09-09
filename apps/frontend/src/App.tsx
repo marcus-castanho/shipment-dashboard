@@ -1,5 +1,15 @@
+import { QueryProvider } from "./context/QueryContext";
+import { UserProvider } from "./context/UserContext";
+import { ShipmentsDashboardPage } from "./pages/ShipmentsDashboardPage";
+
 function App() {
-  return <div>Shipment Dashboard</div>;
+  return (
+    <UserProvider>
+      <QueryProvider>
+        <ShipmentsDashboardPage />
+      </QueryProvider>
+    </UserProvider>
+  );
 }
 
 export default App;
